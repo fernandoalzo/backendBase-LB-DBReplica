@@ -1,0 +1,104 @@
+---
+openapi: 3.0.0
+info:
+  title: Authentication API
+  description: API endpoints for authentication and token validation
+  version: 1.0.0
+
+components:
+  schemas:
+    LoginCredentials:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username for authentication
+        password:
+          type: string
+          format: password
+          description: User's password
+      required:
+        - username
+        - password
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token for authentication
+      required:
+        - token
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token generated for the authenticated user
+    TokenValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: Indicates if the token is valid
+        expired:
+          type: boolean
+          description: Indicates if the token has expired
+        tokenDecoded:
+          type: object
+          description: Decoded token information if valid
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticates a user and returns a JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginCredentials'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid input - Username or password missing
+        '401':
+          description: Authentication failed - Invalid credentials
+      access:
+        roles: ["any"]
+
+  /api/v1/auth/validatetoken:
+    post:
+      tags:
+        - Authentication
+      summary: Validate JWT token
+      description: Validates a JWT token and returns its status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Token'
+      responses:
+        '200':
+          description: Token validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenValidationResponse'
+        '400':
+          description: Invalid input - Token missing
+      access:
+        roles: ["any"] 

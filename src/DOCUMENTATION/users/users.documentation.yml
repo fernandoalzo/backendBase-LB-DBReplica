@@ -1,0 +1,286 @@
+---
+openapi: 3.0.0
+info:
+  title: Users API
+  description: API endpoints for user management
+  version: 1.0.0
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 20
+          description: Unique identifier for a user
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          description: Alphanumeric username for the user
+        documentId:
+          type: integer
+          format: int64
+          description: Document identification number
+        email:
+          type: string
+          format: email
+          description: User's email address
+        phone:
+          type: integer
+          description: User's phone number
+        password:
+          type: string
+          format: password
+          minLength: 6
+          maxLength: 30
+          description: User's password
+        address:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: User's physical address
+        enabled:
+          type: boolean
+          description: Indicates if the user account is enabled
+        reputation:
+          type: integer
+          minimum: 0
+          maximum: 1000
+          description: User's reputation score
+        verified:
+          type: boolean
+          description: Indicates if the user is verified
+        roleId:
+          type: integer
+          description: Role identifier for the user
+      required:
+        - username
+        - documentId
+        - email
+        - phone
+        - password
+        - address
+        - enabled
+        - reputation
+        - verified
+        - roleId
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/v1/users/usersinfo:
+    get:
+      tags:
+        - Users
+      summary: Get users information
+      description: Returns information about all users
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Insufficient permissions
+      access:
+        roles: ["role1", "role2"]
+
+  /api/v1/users/findall:
+    get:
+      tags:
+        - Users
+      summary: Find all users
+      description: Returns a list of all users
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Insufficient permissions
+      access:
+        roles: ["role1", "role2"]
+
+  /api/v1/users/findone/{id}:
+    get:
+      tags:
+        - Users
+      summary: Find user by ID
+      description: Returns a single user by ID
+      security:
+        - JWT: []
+      parameters:
+        - name: id
+          in: path
+          description: ID of the user to find
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Insufficient permissions
+        '404':
+          description: User not found
+      access:
+        roles: ["role1", "role2"]
+
+  /api/v1/users/create:
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: Creates a new user with the provided data
+      security:
+        - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Insufficient permissions
+      access:
+        roles: ["role1"]
+
+  /api/v1/users/update/{id}:
+    patch:
+      tags:
+        - Users
+      summary: Update an existing user
+      description: Updates a user with the provided data
+      security:
+        - JWT: []
+      parameters:
+        - name: id
+          in: path
+          description: ID of the user to update
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                documentId:
+                  type: integer
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: integer
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 30
+                address:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                enabled:
+                  type: boolean
+                reputation:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000
+                verified:
+                  type: boolean
+                roleId:
+                  type: integer
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Insufficient permissions
+        '404':
+          description: User not found
+      access:
+        roles: ["role1", "role2"]
+
+  /api/v1/users/delete/{id}:
+    delete:
+      tags:
+        - Users
+      summary: Delete a user
+      description: Deletes a user by ID
+      security:
+        - JWT: []
+      parameters:
+        - name: id
+          in: path
+          description: ID of the user to delete
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+      responses:
+        '200':
+          description: User deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Insufficient permissions
+        '404':
+          description: User not found
+      access:
+        roles: ["role1"]

@@ -1,0 +1,67 @@
+---
+openapi: 3.0.0
+info:
+  title: Setup API
+  description: API endpoints for system initialization and setup
+  version: 1.0.0
+
+components:
+  schemas:
+    SetupResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          description: Message indicating the result of the setup operation
+        user:
+          type: object
+          description: Information about the admin user created during setup
+          properties:
+            id:
+              type: integer
+              description: User ID
+            username:
+              type: string
+              description: Username of the admin
+            email:
+              type: string
+              format: email
+              description: Email of the admin
+            enabled:
+              type: boolean
+              description: Indicates if the account is enabled
+            verified:
+              type: boolean
+              description: Indicates if the account is verified
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/v1/setup:
+    get:
+      tags:
+        - Setup
+      summary: Initialize the system
+      description: Sets up initial roles and creates an admin user
+      parameters:
+        - name: step
+          in: query
+          description: Setup step to execute
+          required: true
+          schema:
+            type: string
+            enum: [initial]
+      responses:
+        '200':
+          description: Setup completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupResponse'
+        '400':
+          description: Invalid input - Step not found or invalid
+      access:
+        roles: ["any"] 

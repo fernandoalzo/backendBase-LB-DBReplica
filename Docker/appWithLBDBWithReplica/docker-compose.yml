@@ -1,0 +1,159 @@
+services:
+  # =============================
+  # PRIMARY DATABASE
+  # =============================
+  postgres_primary:
+    image: postgres:13
+    container_name: ${DB_PRIMARY_CONTAINER_NAME:?Primary database container name is required}
+    environment:
+      - POSTGRES_DB=${DB_NAME:?Database name is required}
+      - POSTGRES_USER=${DB_USER:?Database user is required}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?Database password is required}
+      - TZ=America/Bogota
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./primary_data:/var/lib/postgresql/data
+      - ./primary/initdb:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # REPLICA DATABASE
+  # =============================
+  postgres_replica:
+    image: postgres:13
+    container_name: ${DB_REPLICA_CONTAINER_NAME:?Replica database container name is required}
+    environment:
+      - POSTGRES_PASSWORD=${DB_REPLICA_PASSWORD:?Replica database password is required}
+      - TZ=America/Bogota
+    volumes:
+      - ./replica_data:/var/lib/postgresql/data
+      - ./replica/replica-entrypoint.sh:/usr/local/bin/replica-entrypoint.sh
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+    ports:
+      - "5433:5432"
+    entrypoint: [ "/usr/local/bin/replica-entrypoint.sh" ]
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # PGADMIN
+  # =============================
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ${PGADMIN_CONTAINER_NAME:?PgAdmin container name is required}
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:?PgAdmin email is required}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:?PgAdmin password is required}
+      - TZ=America/Bogota
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_primary
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # APP INSTANCE 1
+  # =============================
+  app1:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: ${APP1_CONTAINER_NAME:?App1 container name is required}
+    env_file:
+      - ../../.env
+    expose:
+      - "3000"
+    volumes:
+      - ../../:/app
+      - /app/node_modules
+      - ../../uploads:/app/uploads
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # APP INSTANCE 2
+  # =============================
+  app2:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: ${APP2_CONTAINER_NAME:?App2 container name is required}
+    env_file:
+      - ../../.env
+    expose:
+      - "3000"
+    volumes:
+      - ../../:/app
+      - /app/node_modules
+      - ../../uploads:/app/uploads
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # NGINX LOAD BALANCER
+  # =============================
+  nginx:
+    image: nginx:alpine
+    container_name: ${NGINX_CONTAINER_NAME:?Nginx container name is required}
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app1
+      - app2
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - credit_community_network
+
+networks:
+  credit_community_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${DOCKER_SUBNET:?Docker subnet is required}

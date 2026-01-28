@@ -1,0 +1,122 @@
+---
+openapi: 3.0.0
+info:
+  title: Uploads API
+  description: API endpoints for file uploads and retrieval
+  version: 1.0.0
+
+components:
+  schemas:
+    FileUploadResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          description: Message indicating the result of the upload operation
+        filesInfo:
+          type: array
+          description: Information about the uploaded files
+          items:
+            type: object
+            properties:
+              fieldname:
+                type: string
+                description: Field name from the form
+              originalname:
+                type: string
+                description: Original file name
+              encoding:
+                type: string
+                description: Encoding type of the file
+              mimetype:
+                type: string
+                description: MIME type of the file
+              destination:
+                type: string
+                description: The folder where the file has been saved
+              filename:
+                type: string
+                description: The name of the file within the destination
+              path:
+                type: string
+                description: The full path to the uploaded file
+              size:
+                type: integer
+                description: Size of the file in bytes
+    ImageName:
+      type: object
+      properties:
+        imageName:
+          type: string
+          description: Name of the image file to retrieve
+          pattern: ^[a-zA-Z0-9-_]+\.[a-zA-Z0-9]+$
+      required:
+        - imageName
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/v1/uploads:
+    post:
+      tags:
+        - Uploads
+      summary: Upload files
+      description: Upload up to 5 files
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Files to upload (max 5)
+      responses:
+        '200':
+          description: Files uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+        '400':
+          description: Invalid input or no files uploaded
+        '500':
+          description: Upload failed due to server error
+      access:
+        roles: ["any"]
+
+  /api/v1/uploads/show/{imageName}:
+    get:
+      tags:
+        - Uploads
+      summary: Retrieve an image
+      description: Get an image file by its name
+      parameters:
+        - name: imageName
+          in: path
+          description: Name of the image to retrieve
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-zA-Z0-9-_]+\.[a-zA-Z0-9]+$
+      responses:
+        '200':
+          description: Image retrieved successfully
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid image name format
+        '404':
+          description: Image not found
+      access:
+        roles: ["any"] 
