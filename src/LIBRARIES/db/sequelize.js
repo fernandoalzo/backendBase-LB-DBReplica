@@ -3,10 +3,6 @@ const { Sequelize } = require("sequelize");
 const { config } = require("../../CONFIG/config");
 const setUpModels = require("./../../DATABASE/models/models");
 
-const USER = encodeURIComponent(config.dbUser);
-const PASSWORD = encodeURIComponent(config.dbPassword);
-const URI = `postgres://${USER}:${PASSWORD}@${config.dbHost}:${config.dbPort}/${config.dbName}`;
-
 // ☠️☠️☠️ WARNING ☠️☠️☠️
 // Using sequelize.sync() in production with an existing database can cause:
 // - Data loss when tables are dropped and recreated
@@ -28,13 +24,40 @@ class DatabaseSingleton {
       throw new Error("Ya existe una instancia de DatabaseSingleton");
     }
 
-    this.sequelize = new Sequelize(URI, {
+    // Replication configuration: 
+    // - WRITE operations go to PRIMARY host
+    // - READ operations go to REPLICA host
+    this.sequelize = new Sequelize(config.dbName, config.dbUser, config.dbPassword, {
       dialect: "postgres",
       logging: true,
       dialectOptions: {
         useUTC: false,
       },
       timezone: "America/Bogota",
+      replication: {
+        // Write operations (INSERT, UPDATE, DELETE) use the primary database
+        write: {
+          host: config.primaryDbHost,
+          port: config.dbPort,
+          username: config.dbUser,
+          password: config.dbPassword,
+        },
+        // Read operations (SELECT) use the replica database
+        read: [
+          {
+            host: config.replicaDbHost,
+            port: config.dbPort,
+            username: config.dbUser,
+            password: config.dbPassword,
+          },
+        ],
+      },
+      pool: {
+        max: 10,
+        min: 0,
+        acquire: 30000,
+        idle: 10000,
+      },
     });
 
     setUpModels(this.sequelize);
@@ -45,7 +68,7 @@ class DatabaseSingleton {
     DatabaseSingleton.#instance = this;
   }
 
-  static getInstance() { 
+  static getInstance() {
     if (!DatabaseSingleton.#instance) {
       DatabaseSingleton.#instance = new DatabaseSingleton();
     }
