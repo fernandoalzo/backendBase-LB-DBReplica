@@ -8,19 +8,48 @@ This project implements a robust High Availability (HA) stack:
 
 ```mermaid
 graph TD
-    User((User)) --> LB[Nginx Load Balancer]
-    subgraph "App Cluster"
-        LB --> App1[Express App Instance 1]
-        LB --> App2[Express App Instance 2]
+    %% Node Definitions
+    User(("👤 User"))
+    LB[["⚖️ Nginx Load Balancer"]]
+    
+    subgraph cluster_app ["🚀 Application Layer (Highly Available)"]
+        style cluster_app fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,stroke-dasharray: 5 5
+        App1["📦 Node.js Instance 1"]
+        App2["📦 Node.js Instance 2"]
     end
-    subgraph "Database Cluster"
-        App1 -- "Writes (Primary)" --> DB_P[(PostgreSQL Primary)]
-        App2 -- "Writes (Primary)" --> DB_P
-        App1 -- "Reads (Replica)" --> DB_R[(PostgreSQL Replica)]
-        App2 -- "Reads (Replica)" --> DB_R
-        DB_P -- "Streaming Replication" --> DB_R
+
+    subgraph cluster_db ["🗄️ Persistence Layer (Replicated)"]
+        style cluster_db fill:#fff7ed,stroke:#ea580c,stroke-width:2px,stroke-dasharray: 5 5
+        DB_P[("🔥 Primary DB (Writes)")]
+        DB_R[("❄️ Replica DB (Reads)")]
+        PGA[["📊 pgAdmin 4"]]
     end
-    DB_P --> pgAdmin[pgAdmin 4]
+
+    %% Connections
+    User -->|HTTPS| LB
+    LB -->|Round Robin| App1
+    LB -->|Round Robin| App2
+
+    App1 ==>|Write Ops| DB_P
+    App2 ==>|Write Ops| DB_P
+    
+    App1 -.->|Read Ops| DB_R
+    App2 -.->|Read Ops| DB_R
+
+    DB_P -- "Async Streaming" --> DB_R
+    DB_P --- PGA
+
+    %% Styling
+    classDef default font-family:Inter,font-size:14px;
+    classDef lb fill:#eff6ff,stroke:#2563eb,stroke-width:2px;
+    classDef app fill:#f0fdf4,stroke:#16a34a,stroke-width:2px;
+    classDef db fill:#fffbeb,stroke:#d97706,stroke-width:2px;
+    classDef user fill:#faf5ff,stroke:#7c3aed,stroke-width:2px;
+
+    class LB lb;
+    class App1,App2 app;
+    class DB_P,DB_R db;
+    class User user;
 ```
 
 ## ✨ Features
