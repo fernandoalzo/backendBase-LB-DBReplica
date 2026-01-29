@@ -1,25 +1,47 @@
-# 🚀 Backend Base With Uploader
+# 🚀 High Availability Backend Base (LB + DB Replica)
 
-A robust Node.js backend application with file upload capabilities, PostgreSQL database integration, and authentication, fully dockerized for easy deployment.
+A production-ready, highly available Node.js backend architecture. This project features a Load Balanced application cluster and a PostgreSQL Database with Primary-Replica replication, ensuring both scalability and data redundancy.
+
+## 🏗️ System Architecture
+
+This project implements a robust High Availability (HA) stack:
+
+```mermaid
+graph TD
+    User((User)) --> LB[Nginx Load Balancer]
+    subgraph "App Cluster"
+        LB --> App1[Express App Instance 1]
+        LB --> App2[Express App Instance 2]
+    end
+    subgraph "Database Cluster"
+        App1 -- "Writes (Primary)" --> DB_P[(PostgreSQL Primary)]
+        App2 -- "Writes (Primary)" --> DB_P
+        App1 -- "Reads (Replica)" --> DB_R[(PostgreSQL Replica)]
+        App2 -- "Reads (Replica)" --> DB_R
+        DB_P -- "Streaming Replication" --> DB_R
+    end
+    DB_P --> pgAdmin[pgAdmin 4]
+```
 
 ## ✨ Features
 
-- 🔐 JWT Authentication & Authorization
-- 📁 File Upload System
-- 🗄️ PostgreSQL Database with Sequelize ORM
-- 📝 API Documentation with Swagger
-- 🐋 Fully Dockerized deployment
-- 🔄 Easy migrations with Sequelize CLI
+- ⚖️ **Load Balancing**: Nginx distributes traffic across multiple application instances via Round-Robin.
+- 🚀 **Horizontal Scalability**: Easily scale application instances to handle higher loads.
+- 💾 **DB Replication**: PostgreSQL Primary-Replica setup. 
+    - **Writes**: Directed to the Primary instance.
+    - **Reads**: Load-balanced to the Replica instance to reduce primary load.
+- 🔐 **JWT Authentication**: Secure token-based auth with passport-jwt.
+- 📁 **File Upload System**: Integrated multer-based uploader with volume persistence.
+- 📝 **API Documentation**: Live Swagger documentation.
+- 🐋 **Fully Dockerized**: Completely automated deployment with Docker Compose.
 
 ## 🛠️ Prerequisites
 
-Before you begin, ensure you have the following installed:
 - [Docker](https://www.docker.com/) (v20.10 or later)
 - [Docker Compose](https://docs.docker.com/compose/) (v2.0 or later)
+- `.env` file with required configuration (see [Environment Variables](#-environment-variables))
 
-## 🚀 Docker Installation (Recommended)
-
-This application is fully dockerized, making deployment quick and straightforward.
+## 🚀 Quick Start (Production/HA Mode)
 
 1. **Clone the repository**
    ```bash
@@ -27,80 +49,64 @@ This application is fully dockerized, making deployment quick and straightforwar
    cd BackendBaseWithUploader
    ```
 
-2. **Start all services with Docker Compose**
+2. **Deploy the HA Stack**
    ```bash
-   cd Docker
-   docker-compose <.env file path> up -d
+   cd Docker/appWithLBDBWithReplica
+   docker-compose up -d --build
    ```
 
-   This single command will set up:
-   - PostgreSQL database container
-   - pgAdmin container (for database management)
-   - Node.js application container
+3. **Access Services**
+   - 🌐 **Public API (via LB)**: http://localhost:3000
+   - � **Swagger Docs**: http://localhost:3000/api-docs
+   - � **pgAdmin**: http://localhost:5050
+   - 🏥 **LB Health Check**: http://localhost:3000/health
 
-3. **Access your services**
-   - 🌐 Backend API: http://localhost:3000
-   - 📊 pgAdmin: http://localhost:5050
-     - Login with: `root@mail.com` / `12345`
-   - 📚 Swagger API docs: http://localhost:3000/api-docs/
+## 🔍 Service Inventory
 
-4. **Run database migrations (if needed)**
-   ```bash
-   docker exec -it credit_community_app npm run migrations:run
-   ```
+| Service | Role | Port (Ext/Int) |
+| :--- | :--- | :--- |
+| **nginx** | Load Balancer | 3000 / 80 |
+| **app1** | App Instance 1 | Exposed / 3000 |
+| **app2** | App Instance 2 | Exposed / 3000 |
+| **postgres_primary** | Primary DB (Writes) | 5432 / 5432 |
+| **postgres_replica** | Replica DB (Reads) | 5433 / 5432 |
+| **pgadmin** | DB Management | 5050 / 80 |
 
-## 🔍 Docker Service Details
-
-The application consists of three main Docker services:
-
-| Service   | Description                | Port      | Container Name           |
-|-----------|----------------------------|-----------|--------------------------|
-| app       | Node.js backend service    | 3000      | credit_community_app     |
-| postgres  | PostgreSQL database server | 5432      | backend_base_db          |
-| pgadmin   | Database management tool   | 5050      | backend_base_pgadmin     |
-
-## 🛠️ Docker Commands
+## 🛠️ Useful Commands
 
 ```bash
-# Start all services
-docker-compose <.env file path> up -d
+# View Load Balancer logs
+docker-compose logs -f nginx
 
-# View logs
-docker-compose logs -f app
+# View App logs (combined)
+docker-compose logs -f app1 app2
 
-# Stop all services
-docker-compose down
+# Check DB Replication Status (on Primary)
+docker exec -it credit_community_db_primary gosu postgres psql -c "select * from pg_stat_replication;"
 
-# Rebuild and restart services
-docker-compose up -d --build
-
-# Run a command inside the app container
-docker exec -it credit_community_app <command>
+# Run Migrations
+docker exec -it credit_community_app_1 npm run migrations:run
 ```
 
 ## 🔧 Environment Variables
 
-All environment variables are preconfigured in the `.env` file. Key Docker-related variables include:
+The HA setup relies on these key variables in your `.env`:
 
-- `DOCKER_SUBNET`: Docker network subnet configuration
-- `DOCKER_GATEWAY`: Docker network gateway
-- `DB_STATIC_IP`: Static IP for database container
-- `PGADMIN_STATIC_IP`: Static IP for pgAdmin container
-- `APP_STATIC_IP`: Static IP for application container
-- `DB_CONTAINER_NAME`: Name of the database container
-- `DB_USER`: Database username (default: root)
-- `DB_PASSWORD`: Database password (default: 12345)
-- `DB_HOST`: Database host (points to the database container)
-- `DB_NAME`: Database name
+| Variable | Description |
+| :--- | :--- |
+| `PRIMARY_DB_HOST` | Hostname of the primary DB (e.g., `postgres_primary`) |
+| `REPLICA_DB_HOST` | Hostname of the replica DB (e.g., `postgres_replica`) |
+| `DB_PORT` | Port for both DBs (default: 5432) |
+| `DOCKER_SUBNET` | Network subnet for the project |
+| `JWT_SECRET` | Secret key for token signing |
 
-## 📁 File Upload
+## 📁 File Persistence
 
-The application includes a file upload system that stores files in the `/uploads` directory, which is mounted as a Docker volume.
+Files are stored in the `/uploads` directory at the project root. In the HA setup, this directory is shared across all app instances as a Docker volume to ensure consistency.
 
 ## 📝 License
 
 This project is licensed under the ISC License.
 
 ---
-
-�� Happy Coding! 💻 
+🚀 **Built for Performance & Reliability** �
