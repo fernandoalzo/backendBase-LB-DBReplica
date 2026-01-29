@@ -139,7 +139,7 @@ Files are stored in the `/uploads` directory at the project root. In the HA setu
 
 ## 📝 License
 
-This project is licensed under the ISC License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 🚀 **Built for Performance & Reliability** �
