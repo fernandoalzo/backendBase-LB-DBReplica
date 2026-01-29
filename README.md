@@ -33,11 +33,11 @@ graph TD
     LB -->|Round Robin| App1
     LB -->|Round Robin| App2
 
-    App1 ==>|Escr. (Write)| DB_P
-    App2 ==>|Escr. (Write)| DB_P
+    App1 ==>|"Escr. (Write)"| DB_P
+    App2 ==>|"Escr. (Write)"| DB_P
     
-    App1 -.->|Lect. (Read)| DB_R
-    App2 -.->|Lect. (Read)| DB_R
+    App1 -.->|"Lect. (Read)"| DB_R
+    App2 -.->|"Lect. (Read)"| DB_R
 
     DB_P -- "Streaming Asíncrono" --> DB_R
     DB_P --- PGA
