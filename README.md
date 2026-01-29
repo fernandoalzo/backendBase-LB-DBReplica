@@ -1,30 +1,30 @@
-# 🚀 High Availability Backend Base (LB + DB Replica)
+# 🚀 Backend de Alta Disponibilidad (LB + Réplica de BD)
 
-A production-ready, highly available Node.js backend architecture. This project features a Load Balanced application cluster and a PostgreSQL Database with Primary-Replica replication, ensuring both scalability and data redundancy.
+Una arquitectura backend en Node.js de alta disponibilidad lista para producción. Este proyecto cuenta con un clúster de aplicaciones con balanceo de carga y una base de datos PostgreSQL con replicación Primaria-Réplica, garantizando tanto la escalabilidad como la redundancia de datos.
 
-## 🏗️ System Architecture
+## 🏗️ Arquitectura del Sistema
 
-![High Availability Architecture](docs/architecture.png)
+![Arquitectura de Alta Disponibilidad](docs/architecture.png)
 
 <details>
-<summary>📐 View Technical Mermaid Diagram</summary>
+<summary>📐 Ver Diagrama Técnico Mermaid</summary>
 
 ```mermaid
 graph TD
     %% Node Definitions
-    User(("👤 User"))
-    LB[["⚖️ Nginx Load Balancer"]]
+    User(("👤 Usuario"))
+    LB[["⚖️ Balanceador de Carga Nginx"]]
     
-    subgraph cluster_app ["🚀 Application Layer (Highly Available)"]
+    subgraph cluster_app ["🚀 Capa de Aplicación (Alta Disponibilidad)"]
         style cluster_app fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,stroke-dasharray: 5 5
-        App1["📦 Node.js Instance 1"]
-        App2["📦 Node.js Instance 2"]
+        App1["📦 Instancia Node.js 1"]
+        App2["📦 Instancia Node.js 2"]
     end
 
-    subgraph cluster_db ["🗄️ Persistence Layer (Replicated)"]
+    subgraph cluster_db ["🗄️ Capa de Persistencia (Replicada)"]
         style cluster_db fill:#fff7ed,stroke:#ea580c,stroke-width:2px,stroke-dasharray: 5 5
-        DB_P[("🔥 Primary DB (Writes)")]
-        DB_R[("❄️ Replica DB (Reads)")]
+        DB_P[("🔥 DB Primaria (Escritura)")]
+        DB_R[("❄️ DB Réplica (Lectura)")]
         PGA[["📊 pgAdmin 4"]]
     end
 
@@ -33,13 +33,13 @@ graph TD
     LB -->|Round Robin| App1
     LB -->|Round Robin| App2
 
-    App1 ==>|Write Ops| DB_P
-    App2 ==>|Write Ops| DB_P
+    App1 ==>|Escr. (Write)| DB_P
+    App2 ==>|Escr. (Write)| DB_P
     
-    App1 -.->|Read Ops| DB_R
-    App2 -.->|Read Ops| DB_R
+    App1 -.->|Lect. (Read)| DB_R
+    App2 -.->|Lect. (Read)| DB_R
 
-    DB_P -- "Async Streaming" --> DB_R
+    DB_P -- "Streaming Asíncrono" --> DB_R
     DB_P --- PGA
 
     %% Styling
@@ -56,90 +56,91 @@ graph TD
 ```
 </details>
 
-## ✨ Features
+## ✨ Características
 
-- ⚖️ **Load Balancing**: Nginx distributes traffic across multiple application instances via Round-Robin.
-- 🚀 **Horizontal Scalability**: Easily scale application instances to handle higher loads.
-- 💾 **DB Replication**: PostgreSQL Primary-Replica setup. 
-    - **Writes**: Directed to the Primary instance.
-    - **Reads**: Load-balanced to the Replica instance to reduce primary load.
-- 🔐 **JWT Authentication**: Secure token-based auth with passport-jwt.
-- 📁 **File Upload System**: Integrated multer-based uploader with volume persistence.
-- 📝 **API Documentation**: Live Swagger documentation.
-- 🐋 **Fully Dockerized**: Completely automated deployment with Docker Compose.
+- ⚖️ **Balanceo de Carga**: Nginx distribuye el tráfico entre múltiples instancias de la aplicación mediante Round-Robin.
+- 🚀 **Escalabilidad Horizontal**: Escala fácilmente las instancias de la aplicación para manejar mayores cargas de trabajo.
+- 💾 **Replicación de BD**: Configuración PostgreSQL Primaria-Réplica. 
+    - **Escrituras**: Dirigidas exclusivamente a la instancia Primaria.
+    - **Lecturas**: Balanceadas hacia la instancia Réplica para optimizar el rendimiento.
+- 🔐 **Autenticación JWT**: Seguridad robusta basada en tokens con passport-jwt.
+- 📁 **Gestión de Archivos**: Sistema de carga basado en multer con persistencia en volúmenes Docker.
+- 📝 **Documentación API**: Swagger UI integrado para pruebas y referencia técnica.
+- 🐋 **Totalmente Dockerizado**: Despliegue automatizado y reproducible con Docker Compose.
 
-## 🛠️ Prerequisites
+## 🛠️ Prerrequisitos
 
-- [Docker](https://www.docker.com/) (v20.10 or later)
-- [Docker Compose](https://docs.docker.com/compose/) (v2.0 or later)
-- `.env` file with required configuration (see [Environment Variables](#-environment-variables))
+- [Docker](https://www.docker.com/) (v20.10 o posterior)
+- [Docker Compose](https://docs.docker.com/compose/) (v2.0 o posterior)
+- Archivo `.env` configurado (ver [Variables de Entorno](#-variables-de-entorno))
 
-## 🚀 Quick Start (Production/HA Mode)
+## 🚀 Inicio Rápido (Modo Producción/HA)
 
-1. **Clone the repository**
+1. **Clonar el repositorio**
    ```bash
    git clone https://github.com/fernandoalzo/backendBase-LB-DBReplica.git
    cd backendBase-LB-DBReplica
    ```
 
-2. **Deploy the HA Stack**
+2. **Desplegar la Infraestructura HA**
    ```bash
    cd Docker/appWithLBDBWithReplica
-   docker-compose --env-file <.env file path> up -d
+   docker-compose --env-file <ruta al archivo .env> up -d
    ```
 
-3. **Access Services**
-   - 🌐 **Public API (via LB)**: http://localhost:3000
-   - � **Swagger Docs**: http://localhost:3000/api-docs
-   - � **pgAdmin**: http://localhost:5050
-   - 🏥 **LB Health Check**: http://localhost:3000/health
+3. **Acceso a los Servicios**
+   - 🌐 **API Pública (vía LB)**: http://localhost:3000
+   - 📚 **Documentación Swagger**: http://localhost:3000/api-docs
+   - 📊 **pgAdmin**: http://localhost:5050
+   - 🏥 **Health Check del LB**: http://localhost:3000/health
 
-## 🔍 Service Inventory
+## 🔍 Inventario de Servicios
 
-| Service | Role | Port (Ext/Int) |
+| Servicio | Rol | Puerto (Ext/Int) |
 | :--- | :--- | :--- |
-| **nginx** | Load Balancer | 3000 / 80 |
-| **app1** | App Instance 1 | Exposed / 3000 |
-| **app2** | App Instance 2 | Exposed / 3000 |
-| **postgres_primary** | Primary DB (Writes) | 5432 / 5432 |
-| **postgres_replica** | Replica DB (Reads) | 5433 / 5432 |
-| **pgadmin** | DB Management | 5050 / 80 |
+| **nginx** | Balanceador de Carga | 3000 / 80 |
+| **app1** | Instancia de App 1 | Expuesto / 3000 |
+| **app2** | Instancia de App 2 | Expuesto / 3000 |
+| **postgres_primary** | BD Primaria (Escritura) | 5432 / 5432 |
+| **postgres_replica** | BD Réplica (Lectura) | 5433 / 5432 |
+| **pgadmin** | Gestión de BD | 5050 / 80 |
 
-## 🛠️ Useful Commands
+## 🛠️ Comandos Útiles
 
 ```bash
-# View Load Balancer logs
+# Ver logs del Balanceador de Carga
 docker-compose logs -f nginx
 
-# View App logs (combined)
+# Ver logs de las aplicaciones (combinados)
 docker-compose logs -f app1 app2
 
-# Check DB Replication Status (on Primary)
+# Verificar estado de replicación (en la Primaria)
 docker exec -it credit_community_db_primary gosu postgres psql -c "select * from pg_stat_replication;"
 
-# Run Migrations
+# Ejecutar Migraciones
 docker exec -it credit_community_app_1 npm run migrations:run
 ```
 
-## 🔧 Environment Variables
+## 🔧 Variables de Entorno
 
-The HA setup relies on these key variables in your `.env`:
+La infraestructura HA depende de estas variables clave en tu archivo `.env`:
 
-| Variable | Description |
+| Variable | Descripción |
 | :--- | :--- |
-| `PRIMARY_DB_HOST` | Hostname of the primary DB (e.g., `postgres_primary`) |
-| `REPLICA_DB_HOST` | Hostname of the replica DB (e.g., `postgres_replica`) |
-| `DB_PORT` | Port for both DBs (default: 5432) |
-| `DOCKER_SUBNET` | Network subnet for the project |
-| `JWT_SECRET` | Secret key for token signing |
+| `PRIMARY_DB_HOST` | Host de la base de datos primaria (ej. `postgres_primary`) |
+| `REPLICA_DB_HOST` | Host de la base de datos réplica (ej. `postgres_replica`) |
+| `DB_PORT` | Puerto de conexión para ambas DBs (defecto: 5432) |
+| `DOCKER_SUBNET` | Subred de red para el proyecto Docker |
+| `JWT_SECRET` | Clave secreta para la firma de tokens JWT |
 
-## 📁 File Persistence
+## 📁 Persistencia de Archivos
 
-Files are stored in the `/uploads` directory at the project root. In the HA setup, this directory is shared across all app instances as a Docker volume to ensure consistency.
+Los archivos se almacenan en el directorio `/uploads` en la raíz del proyecto. En la configuración HA, este directorio se comparte entre todas las instancias de la aplicación mediante volúmenes Docker para garantizar la consistencia.
 
-## 📝 License
+## 📝 Licencia
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Este proyecto está bajo la Licencia MIT - consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
-🚀 **Built for Performance & Reliability** �
+🚀 **Diseñado para Alto Rendimiento y Fiabilidad** 🚀
+�
