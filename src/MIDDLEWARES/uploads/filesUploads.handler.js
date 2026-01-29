@@ -2,6 +2,7 @@ const multer = require("multer");
 const path = require("path");
 
 const { config } = require("../../CONFIG/config");
+const logger = require("../../UTILS/logger");
 
 // Function to sanitize the filename
 function sanitizeFileName(fileName) {
@@ -18,6 +19,7 @@ function uploads({
         filename: (req, file, cb) => {
             const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
             const sanitizedFileName = sanitizeFileName(file.originalname);
+            logger.debug(`[filesUploads.handler.js] 📁 Processing file: ${file.originalname} -> ${uniqueSuffix}-${sanitizedFileName}`);
             cb(null, uniqueSuffix + "-" + sanitizedFileName);
         },
     });
@@ -33,6 +35,7 @@ function uploads({
         if (extname && mimeType) {
             cb(null, true);
         } else {
+            logger.warn(`[filesUploads.handler.js] ⚠️ File rejected: ${file.originalname} (invalid type: ${file.mimetype})`);
             cb(
                 new Error(
                     "Solo se permiten archivos de los tipos: " +

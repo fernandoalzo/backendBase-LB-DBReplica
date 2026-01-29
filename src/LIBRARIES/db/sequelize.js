@@ -2,6 +2,7 @@ const { Sequelize } = require("sequelize");
 
 const { config } = require("../../CONFIG/config");
 const setUpModels = require("./../../DATABASE/models/models");
+const logger = require("../../UTILS/logger");
 
 // ☠️☠️☠️ WARNING ☠️☠️☠️
 // Using sequelize.sync() in production with an existing database can cause:
@@ -24,12 +25,17 @@ class DatabaseSingleton {
       throw new Error("Ya existe una instancia de DatabaseSingleton");
     }
 
+    logger.info("[sequelize.js] 🔌 Initializing database connection...");
+    logger.info(`[sequelize.js] 📍 Primary (Write) Host: ${config.primaryDbHost}:${config.dbPort}`);
+    logger.info(`[sequelize.js] 📍 Replica (Read) Host: ${config.replicaDbHost}:${config.dbPort}`);
+    logger.info(`[sequelize.js] 📦 Database: ${config.dbName}`);
+
     // Replication configuration: 
     // - WRITE operations go to PRIMARY host
     // - READ operations go to REPLICA host
     this.sequelize = new Sequelize(config.dbName, config.dbUser, config.dbPassword, {
       dialect: "postgres",
-      logging: true,
+      logging: (msg) => logger.debug(`[sequelize.js] 🗃️  SQL: ${msg}`),
       dialectOptions: {
         useUTC: false,
       },
@@ -60,12 +66,29 @@ class DatabaseSingleton {
       },
     });
 
+    // Test database connection
+    this.#testConnection();
+
     setUpModels(this.sequelize);
+    logger.info("[sequelize.js] 📐 Database models initialized successfully");
+
     // 👇👇👇 DANGER: COMMENT OUT OR REMOVE THIS LINE IN PRODUCTION 👇👇👇
-    this.sequelize.sync();
+    this.sequelize.sync()
+      .then(() => logger.info("[sequelize.js] ✅ Database synchronized successfully"))
+      .catch((err) => logger.error("[sequelize.js] ❌ Database sync failed:", err));
     // ☝️☝️☝️ DANGER: COMMENT OUT OR REMOVE THIS LINE IN PRODUCTION ☝️☝️☝️
 
     DatabaseSingleton.#instance = this;
+  }
+
+  async #testConnection() {
+    try {
+      await this.sequelize.authenticate();
+      logger.info("[sequelize.js] ✅ Database connection established successfully");
+    } catch (error) {
+      logger.error("[sequelize.js] ❌ Unable to connect to the database:", error.message);
+      throw error;
+    }
   }
 
   static getInstance() {
