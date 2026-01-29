@@ -85,7 +85,7 @@ graph TD
 2. **Deploy the HA Stack**
    ```bash
    cd Docker/appWithLBDBWithReplica
-   docker-compose up -d --build
+   docker-compose --env-file <.env file path> up -d
    ```
 
 3. **Access Services**
