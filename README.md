@@ -4,7 +4,10 @@ A production-ready, highly available Node.js backend architecture. This project 
 
 ## 🏗️ System Architecture
 
-This project implements a robust High Availability (HA) stack:
+![High Availability Architecture](docs/architecture.png)
+
+<details>
+<summary>📐 View Technical Mermaid Diagram</summary>
 
 ```mermaid
 graph TD
@@ -51,6 +54,7 @@ graph TD
     class DB_P,DB_R db;
     class User user;
 ```
+</details>
 
 ## ✨ Features
 
