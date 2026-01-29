@@ -45,8 +45,8 @@ graph TD
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/fernandoalzo/BackendBaseWithUploader.git
-   cd BackendBaseWithUploader
+   git clone https://github.com/fernandoalzo/backendBase-LB-DBReplica.git
+   cd backendBase-LB-DBReplica
    ```
 
 2. **Deploy the HA Stack**
