@@ -1,0 +1,513 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: BackendBase
+meta:
+  id: wrk_1a4b4d09ef2a440b89e5766b61a6a058
+  created: 1769633474751
+  modified: 1769633474751
+  description: ""
+collection:
+  - name: users
+    meta:
+      id: fld_3a896296533c450a84284f76866f6a34
+      created: 1722658696121
+      modified: 1722658696121
+      sortKey: -1722658696121
+      description: ""
+    children:
+      - url: "{{ _.apiHost }}/api/v1/users/findone/1"
+        name: findOne
+        meta:
+          id: req_776e502a8f5845f6a54517d8645074c7
+          created: 1722734677458
+          modified: 1723954672410
+          isPrivate: false
+          description: ""
+          sortKey: -1721051915343
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/users/findall"
+        name: findAll
+        meta:
+          id: req_21cdc681f1d64fc9b0abcc831ed21387
+          created: 1722734758848
+          modified: 1724026384473
+          isPrivate: false
+          description: ""
+          sortKey: -1721855316028.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/users/create"
+        name: create
+        meta:
+          id: req_7b6dad532ea44cbfb7e2b40617fec041
+          created: 1722734777843
+          modified: 1769635645123
+          isPrivate: false
+          description: ""
+          sortKey: -1719846814314.75
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "user1",
+            	"documentId": 1234567892,
+            	"email": "user1@mail.com",
+            	"phone": "3155270159",
+            	"password": "password",
+            	"address": "Bogota DC",
+            	"roleId": 2,
+            	"enabled": true,
+            	"reputation": 1000,
+            	"verified": false
+            	
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/users/update/4"
+        name: update
+        meta:
+          id: req_6e4344f4739046ee96b474feb6b5c7c3
+          created: 1722735126034
+          modified: 1723002509939
+          isPrivate: false
+          description: ""
+          sortKey: -1719645964143.375
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"password": "password",
+            	"reputation": 800,
+            	"verified": true
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/users/delete/4"
+        name: delete
+        meta:
+          id: req_338c3c0c1f544ac08a0b8f37e2309763
+          created: 1722735146656
+          modified: 1723002525977
+          isPrivate: false
+          description: ""
+          sortKey: -1719645964043.375
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/users/usersInfo"
+        name: usersInfo
+        meta:
+          id: req_3dfba2efe6094dcd9338015c92b85383
+          created: 1724022900792
+          modified: 1724022909283
+          isPrivate: false
+          description: ""
+          sortKey: -1721855316128.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: auth
+    meta:
+      id: fld_eed208d824f246ab8e642f83f23ae804
+      created: 1722813627589
+      modified: 1722813627589
+      sortKey: -1722813627589
+      description: ""
+    children:
+      - url: "{{ _.apiHost }}/api/v1/auth/login"
+        name: logIn
+        meta:
+          id: req_b4485fad61b34971a8dc45946620225b
+          created: 1722823638093
+          modified: 1723932537319
+          isPrivate: false
+          description: ""
+          sortKey: -1722823654076
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "admin",
+            	"password": "password"
+
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/auth/validatetoken"
+        name: validateToken
+        meta:
+          id: req_95acc75dcc8049218240f4e5b55ad597
+          created: 1722825114690
+          modified: 1769794210241
+          isPrivate: false
+          description: ""
+          sortKey: -1722741185395
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"token": ""
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: roles
+    meta:
+      id: fld_aa7b2433243642a59f04185f88fceb19
+      created: 1722979470025
+      modified: 1743356706264
+      sortKey: -1722129018603.25
+      description: ""
+    children:
+      - url: "{{ _.apiHost }}/api/v1/roles/findone/1"
+        name: findOne
+        meta:
+          id: req_b141b8c287f64aa6a4969287d3831f48
+          created: 1722979470033
+          modified: 1723003072043
+          isPrivate: false
+          description: ""
+          sortKey: -1721051915343
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/roles/findall"
+        name: findAll
+        meta:
+          id: req_7ebb236b5cbe4c53a60b74fff1bb7708
+          created: 1722979470036
+          modified: 1723003059886
+          isPrivate: false
+          description: ""
+          sortKey: -1721855316028.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/roles/create"
+        name: create
+        meta:
+          id: req_e46a4613a53942ee92b274b78de7c391
+          created: 1722979470041
+          modified: 1723003083402
+          isPrivate: false
+          description: ""
+          sortKey: -1719846814314.75
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "user"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/roles/update/2"
+        name: update
+        meta:
+          id: req_6841004d4d38420186f0ff7278cd2172
+          created: 1722979470044
+          modified: 1723003097610
+          isPrivate: false
+          description: ""
+          sortKey: -1719645964143.375
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"password": "password",
+            	"reputation": 800,
+            	"verified": true
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/roles/delete/1"
+        name: delete
+        meta:
+          id: req_aff655a0a9f44483b7488abcd7637fc9
+          created: 1722979470047
+          modified: 1723003109812
+          isPrivate: false
+          description: ""
+          sortKey: -1719645964043.375
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: setUp
+    meta:
+      id: fld_8e1c983ed4d843c99ed2c6109e37470f
+      created: 1722983855328
+      modified: 1722983858116
+      sortKey: -1722813627689
+      description: ""
+    children:
+      - url: "{{ _.apiHost }}/api/v1/setup/?step=initial"
+        name: initialSetup
+        meta:
+          id: req_7c4acede938042518d42c942392b0163
+          created: 1722983855335
+          modified: 1722993577495
+          isPrivate: false
+          description: ""
+          sortKey: -1722741185395
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: uploads
+    meta:
+      id: fld_1b1a9917f39c4a7faf15ed3042284dbe
+      created: 1743356686851
+      modified: 1743356703738
+      sortKey: -1721599341085.5
+      description: ""
+    children:
+      - url: "{{ _.apiHost }}/api/v1/uploads"
+        name: uploads
+        meta:
+          id: req_caca768eb44c4844864e35e3a5e5f33c
+          created: 1743356719243
+          modified: 1769644981976
+          isPrivate: false
+          description: ""
+          sortKey: -1743356721346
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: files
+              value: ""
+              fileName: /Users/erre/Downloads/2.png
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.apiHost }}/api/v1/uploads/show/1769644992426-790109618-2.png"
+        name: sowFileUploaded
+        meta:
+          id: req_f1e5f2abc1e24a5b92a80fd05f3aa09a
+          created: 1743356817917
+          modified: 1769645014703
+          isPrivate: false
+          description: ""
+          sortKey: -1743356721246
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/2023.5.8
+        authentication:
+          type: bearer
+          token: "{{ _.jwtToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_ab2ae7e73dfd4ace9592bc6a4c77aaf7
+    created: 1722658686283
+    modified: 1722658686283
+environments:
+  name: Base Environment
+  meta:
+    id: env_17a74617e8664b398267dcbfbb31b57c
+    created: 1722658686281
+    modified: 1769794143198
+    isPrivate: false
+  data:
+    apiHost: 127.0.0.1:3000
+    jwtToken: ""
