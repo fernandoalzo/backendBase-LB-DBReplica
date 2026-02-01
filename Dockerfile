@@ -14,5 +14,8 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Command to run the application in development mode
-CMD ["npm", "run", "dev"] 
+# Use non-root user for security
+USER node
+
+# Command to run the application in production mode
+CMD ["npm", "start"] 

@@ -23,7 +23,7 @@ const app = express();
 // Esto causa que 'express-rate-limit' no pueda obtener la IP real del cliente
 // y arroje el error 'X-Forwarded-For' que vimos en los logs.
 // Al habilitar 'trust proxy', Express tomará correctamente la IP original.
-// app.set('trust proxy', true);
+app.set('trust proxy', true);
 const port = config.port;
 // Compression
 app.use(compression({
