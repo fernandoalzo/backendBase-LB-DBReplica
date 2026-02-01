@@ -1,5 +1,0 @@
-FROM postgres:13
-
-# Copy init scripts to the docker-entrypoint-initdb.d directory
-# These scripts will run on the first startup of the container
-COPY primary/initdb/ /docker-entrypoint-initdb.d/
