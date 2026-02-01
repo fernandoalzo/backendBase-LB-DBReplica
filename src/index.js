@@ -1,5 +1,5 @@
 const express = require("express");
-const routerAPI = require("./routes/routes");
+const routerAPI = require("./ROUTES/routes");
 const cors = require("cors");
 const { rateLimit } = require("express-rate-limit");
 const compression = require("compression");
