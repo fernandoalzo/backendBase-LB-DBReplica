@@ -1,0 +1,174 @@
+services:
+  # =============================
+  # PRIMARY DATABASE
+  # =============================
+  postgres_primary:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres_primary
+    # Railway manages container names, but we keep this for internal resolution if needed.
+    # Note: Using specific container_name might conflict if multiple deployments exist, 
+    # but for a single Railway project it's fine.
+    container_name: ${DB_PRIMARY_CONTAINER_NAME:-postgres_primary}
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - TZ=America/Bogota
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - primary_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # REPLICA DATABASE
+  # =============================
+  postgres_replica:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres_replica
+    container_name: ${DB_REPLICA_CONTAINER_NAME:-postgres_replica}
+    environment:
+      - POSTGRES_PASSWORD=${DB_REPLICA_PASSWORD}
+      - TZ=America/Bogota
+    volumes:
+      - replica_data:/var/lib/postgresql/data
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+    ports:
+      # Map to a different external port if exposed, internal allows 5432
+      - "${DB_REPLICA_PORT:-5433}:5432"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # PGADMIN (Optional on Railway)
+  # =============================
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ${PGADMIN_CONTAINER_NAME:-pgadmin}
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - TZ=America/Bogota
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_primary
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # APP INSTANCE 1
+  # =============================
+  app1:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: ${APP1_CONTAINER_NAME:-app1}
+    env_file:
+      - ../../.env
+    expose:
+      - "3000"
+    volumes:
+      # On Railway, we can't mount host code. The build context takes care of code.
+      # We must NOT mount ./ ../..:/app because it overwrites the built image content with empty host volume if not careful.
+      # But wait, we define 'volumes' to persist uploads.
+      - app_uploads:/app/uploads
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # APP INSTANCE 2
+  # =============================
+  app2:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: ${APP2_CONTAINER_NAME:-app2}
+    env_file:
+      - ../../.env
+    expose:
+      - "3000"
+    volumes:
+      - app_uploads:/app/uploads
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - credit_community_network
+
+  # =============================
+  # NGINX LOAD BALANCER
+  # =============================
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: ${NGINX_CONTAINER_NAME:-nginx_lb}
+    ports:
+      - "3000:80"
+      # Railway will likely only expose ONE service to the public internet (the one binding to $PORT or user choice).
+      # If Nginx is the entry point, it should bind to $PORT. 
+      # Railway injects $PORT. 
+      # We might need a command override to substitute $PORT in nginx config or map 80 to $PORT.
+      # However, for Docker Compose, Railway maps the first exposed port.
+    depends_on:
+      - app1
+      - app2
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - credit_community_network
+
+networks:
+  credit_community_network:
+    driver: bridge
+    # IPAM config is usually not needed/ignored by Railway but kept for compatibility
+    # ipam:
+    #   config:
+    #     - subnet: ${DOCKER_SUBNET}
+
+volumes:
+  primary_data:
+  replica_data:
+  app_uploads:

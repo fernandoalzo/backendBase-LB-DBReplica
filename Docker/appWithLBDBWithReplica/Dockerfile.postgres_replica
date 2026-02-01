@@ -1,0 +1,10 @@
+FROM postgres:13
+
+# Copy the custom entrypoint script
+COPY replica/replica-entrypoint.sh /usr/local/bin/
+
+# Make sure the script is executable
+RUN chmod +x /usr/local/bin/replica-entrypoint.sh
+
+# Use the custom entrypoint
+ENTRYPOINT ["/usr/local/bin/replica-entrypoint.sh"]
